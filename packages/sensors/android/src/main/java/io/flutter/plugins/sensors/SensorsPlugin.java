@@ -11,6 +11,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /** SensorsPlugin */
 public class SensorsPlugin implements EventChannel.StreamHandler {
