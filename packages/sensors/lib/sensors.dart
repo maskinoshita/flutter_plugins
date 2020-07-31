@@ -11,7 +11,11 @@ const EventChannel _gyroscopeEventChannel =
     EventChannel('plugins.flutter.io/sensors/gyroscope');
 
 class AccelerometerEvent {
-  AccelerometerEvent(this.x, this.y, this.z);
+  AccelerometerEvent(int tus, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tus);
+
+  /// creation time of sensor data
+  final DateTime t;
 
   /// Acceleration force along the x axis (including gravity) measured in m/s^2.
   final double x;
@@ -27,7 +31,11 @@ class AccelerometerEvent {
 }
 
 class GyroscopeEvent {
-  GyroscopeEvent(this.x, this.y, this.z);
+  GyroscopeEvent(int tus, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tus);
+
+  /// creation time of sensor data
+  final DateTime t;
 
   /// Rate of rotation around the x axis measured in rad/s.
   final double x;
@@ -43,7 +51,11 @@ class GyroscopeEvent {
 }
 
 class UserAccelerometerEvent {
-  UserAccelerometerEvent(this.x, this.y, this.z);
+  UserAccelerometerEvent(int tus, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tus);
+
+  /// creation time of sensor data
+  final DateTime t;
 
   /// Acceleration force along the x axis (excluding gravity) measured in m/s^2.
   final double x;
@@ -56,18 +68,6 @@ class UserAccelerometerEvent {
 
   @override
   String toString() => '[UserAccelerometerEvent (x: $x, y: $y, z: $z)]';
-}
-
-AccelerometerEvent _listToAccelerometerEvent(List<double> list) {
-  return AccelerometerEvent(list[0], list[1], list[2]);
-}
-
-UserAccelerometerEvent _listToUserAccelerometerEvent(List<double> list) {
-  return UserAccelerometerEvent(list[0], list[1], list[2]);
-}
-
-GyroscopeEvent _listToGyroscopeEvent(List<double> list) {
-  return GyroscopeEvent(list[0], list[1], list[2]);
 }
 
 Stream<AccelerometerEvent> _accelerometerEvents;
@@ -87,8 +87,8 @@ Stream<AccelerometerEvent> get accelerometerEvents {
   if (_accelerometerEvents == null) {
     _accelerometerEvents = _accelerometerEventChannel
         .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
-        .map(
-            (dynamic event) => _listToAccelerometerEvent(event.cast<double>()));
+        .map((dynamic event) =>
+            AccelerometerEvent(event[0], event[1], event[2], event[3]));
   }
   return _accelerometerEvents;
 }
@@ -98,7 +98,8 @@ Stream<GyroscopeEvent> get gyroscopeEvents {
   if (_gyroscopeEvents == null) {
     _gyroscopeEvents = _gyroscopeEventChannel
         .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
-        .map((dynamic event) => _listToGyroscopeEvent(event.cast<double>()));
+        .map((dynamic event) =>
+            GyroscopeEvent(event[0], event[1], event[2], event[3]));
   }
   return _gyroscopeEvents;
 }
@@ -109,7 +110,7 @@ Stream<UserAccelerometerEvent> get userAccelerometerEvents {
     _userAccelerometerEvents = _userAccelerometerEventChannel
         .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
         .map((dynamic event) =>
-            _listToUserAccelerometerEvent(event.cast<double>()));
+            UserAccelerometerEvent(event[0], event[1], event[2], event[3]));
   }
   return _userAccelerometerEvents;
 }
