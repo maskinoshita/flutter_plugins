@@ -64,8 +64,11 @@ public class SensorsPlugin implements EventChannel.StreamHandler {
       @Override
       public void onSensorChanged(SensorEvent event) {
         final long timestamp_in_us = event.timestamp/1000;
-        List<Object> sensorValues = new ArrayList();
-        Collections.addAll(sensorValues, timestamp_in_us, event.values);
+        ArrayList<Object> sensorValues = new ArrayList(event.values.length + 1);
+        sensorValues.add(timestamp_in_us);
+        for (double v : event.values) {
+          sensorValues.add(v);
+        }
         events.success(sensorValues);
       }
     };
