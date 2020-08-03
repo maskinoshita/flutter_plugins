@@ -12,6 +12,8 @@ import android.hardware.SensorManager;
 
 import androidx.annotation.NonNull;
 
+import android.os.SystemClock;
+
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -82,15 +84,17 @@ public class SensorsPlugin implements EventChannel.StreamHandler {
 
   SensorEventListener createSensorEventListener(final EventChannel.EventSink events) {
     return new SensorEventListener() {
+      private final long boottime_ms_epoch = System.currentTimeMillis() - SystemClock.elapsedRealtimeNanos() / 1000000;
+
       @Override
       public void onAccuracyChanged(Sensor sensor, int accuracy) {
       }
 
       @Override
       public void onSensorChanged(SensorEvent event) {
-        final long timestamp_in_us = event.timestamp/1000;
+        final long timestamp_ms_epoch = boottime_ms_epoch + event.timestamp / 1000000;
         final ArrayList<Object> sensorValues = new ArrayList(event.values.length + 1);
-        sensorValues.add(timestamp_in_us);
+        sensorValues.add(timestamp_ms_epoch);
         for (double v : event.values) {
           sensorValues.add(v);
         }

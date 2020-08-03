@@ -30,7 +30,7 @@ const MethodChannel _getOrientationMethodChannel =
 
 class AccelerometerEvent {
   AccelerometerEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMicrosecondsSinceEpoch(tus);
+      : t = DateTime.fromMillisecondsSinceEpoch(tus);
 
   /// creation time of sensor data
   final DateTime t;
@@ -50,7 +50,7 @@ class AccelerometerEvent {
 
 class GyroscopeEvent {
   GyroscopeEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMicrosecondsSinceEpoch(tus);
+      : t = DateTime.fromMillisecondsSinceEpoch(tus);
 
   /// creation time of sensor data
   final DateTime t;
@@ -70,7 +70,7 @@ class GyroscopeEvent {
 
 class UserAccelerometerEvent {
   UserAccelerometerEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMicrosecondsSinceEpoch(tus);
+      : t = DateTime.fromMillisecondsSinceEpoch(tus);
 
   /// creation time of sensor data
   final DateTime t;
@@ -90,7 +90,7 @@ class UserAccelerometerEvent {
 
 class RotationVectorEvent {
   RotationVectorEvent(int tus, this.x, this.y, this.z, this.scalar)
-      : t = DateTime.fromMicrosecondsSinceEpoch(tus);
+      : t = DateTime.fromMillisecondsSinceEpoch(tus);
 
   /// creation time of sensor data
   final DateTime t;
@@ -114,7 +114,7 @@ class RotationVectorEvent {
 
 class GameRotationVectorEvent {
   GameRotationVectorEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMicrosecondsSinceEpoch(tus);
+      : t = DateTime.fromMillisecondsSinceEpoch(tus);
 
   /// creation time of sensor data
   final DateTime t;
@@ -134,7 +134,7 @@ class GameRotationVectorEvent {
 
 class GeomagneticRotationVectorEvent {
   GeomagneticRotationVectorEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMicrosecondsSinceEpoch(tus);
+      : t = DateTime.fromMillisecondsSinceEpoch(tus);
 
   /// creation time of sensor data
   final DateTime t;
@@ -154,7 +154,7 @@ class GeomagneticRotationVectorEvent {
 
 class MagneticFieldEvent {
   MagneticFieldEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMicrosecondsSinceEpoch(tus);
+      : t = DateTime.fromMillisecondsSinceEpoch(tus);
 
   /// creation time of sensor data
   final DateTime t;
