@@ -53,7 +53,7 @@ public class SensorsPlugin implements EventChannel.StreamHandler {
     gyroscopeChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_GYROSCOPE));
 
     final EventChannel gyroscopeUncalibratedChannel = new EventChannel(registrar.messenger(), GYROSCOPE_UNCALIBRATED_CHANNEL_NAME);
-    gyroscopeUncalibratedChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_ACCELEROMETER_UNCALIBRATED));
+    gyroscopeUncalibratedChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_GYROSCOPE_UNCALIBRATED));
 
     final EventChannel rotationVectorChannel = new EventChannel(registrar.messenger(), ROTATION_VECTOR_CHANNEL_NAME);
     rotationVectorChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_ROTATION_VECTOR));
