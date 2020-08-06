@@ -24,24 +24,36 @@ import java.util.List;
 /** SensorsPlugin */
 public class SensorsPlugin implements EventChannel.StreamHandler {
   private static final String ACCELEROMETER_CHANNEL_NAME = "plugins.flutter.io/sensors/accelerometer";
+  private static final String ACCELEROMETER_UNCALIBRATED_CHANNEL_NAME = "plugins.flutter.io/sensors/accelerometer_uncalibrated";
+  private static final String GRAVITY_CHANNEL_NAME = "plugins.flutter.io/sensors/gravity";
   private static final String GYROSCOPE_CHANNEL_NAME = "plugins.flutter.io/sensors/gyroscope";
+  private static final String GYROSCOPE_UNCALIBRATED_CHANNEL_NAME = "plugins.flutter.io/sensors/gyroscope_uncalibrated";
   private static final String USER_ACCELEROMETER_CHANNEL_NAME = "plugins.flutter.io/sensors/user_accel";
   private static final String ROTATION_VECTOR_CHANNEL_NAME = "plugins.flutter.io/sensors/rotation_vector";
   private static final String GAME_ROTATION_VECTOR_CHANNEL_NAME = "plugins.flutter.io/sensors/game_rotation_vector";
   private static final String GEOMAGNETIC_ROTATION_VECTOR_CHANNEL_NAME = "plugins.flutter.io/sensors/geomagnetic_rotation_vector";
   private static final String MAGNETIC_FIELD_CHANNEL_NAME = "plugins.flutter.io/sensors/magnetic_field";
-
+  private static final String MAGNETIC_FIELD_UNCALIBRATED_CHANNEL_NAME = "plugins.flutter.io/sensors/magnetic_field_uncalibrated";
 
   /** Plugin registration. */
   public static void registerWith(Registrar registrar) {
     final EventChannel accelerometerChannel = new EventChannel(registrar.messenger(), ACCELEROMETER_CHANNEL_NAME);
     accelerometerChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_ACCELEROMETER));
 
+    final EventChannel accelerometerUncalibratedChannel = new EventChannel(registrar.messenger(), ACCELEROMETER_UNCALIBRATED_CHANNEL_NAME);
+    accelerometerUncalibratedChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_ACCELEROMETER_UNCALIBRATED));
+
+    final EventChannel gravityChannel = new EventChannel(registrar.messenger(), GRAVITY_CHANNEL_NAME);
+    gravityChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_GRAVITY));
+
     final EventChannel userAccelChannel = new EventChannel(registrar.messenger(), USER_ACCELEROMETER_CHANNEL_NAME);
     userAccelChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_LINEAR_ACCELERATION));
 
     final EventChannel gyroscopeChannel = new EventChannel(registrar.messenger(), GYROSCOPE_CHANNEL_NAME);
     gyroscopeChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_GYROSCOPE));
+
+    final EventChannel gyroscopeUncalibratedChannel = new EventChannel(registrar.messenger(), GYROSCOPE_UNCALIBRATED_CHANNEL_NAME);
+    gyroscopeUncalibratedChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_ACCELEROMETER_UNCALIBRATED));
 
     final EventChannel rotationVectorChannel = new EventChannel(registrar.messenger(), ROTATION_VECTOR_CHANNEL_NAME);
     rotationVectorChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_ROTATION_VECTOR));
@@ -54,6 +66,9 @@ public class SensorsPlugin implements EventChannel.StreamHandler {
 
     final EventChannel magneticFieldChannel = new EventChannel(registrar.messenger(), MAGNETIC_FIELD_CHANNEL_NAME);
     magneticFieldChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_MAGNETIC_FIELD));
+
+    final EventChannel magneticFieldUncalibratedChannel = new EventChannel(registrar.messenger(), MAGNETIC_FIELD_UNCALIBRATED_CHANNEL_NAME);
+    magneticFieldUncalibratedChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED));
 
     final MethodChannel methodGetRotationMatrixChannel = new MethodChannel(registrar.messenger(), MethodGetRotation.CHANNEL);
     methodGetRotationMatrixChannel.setMethodCallHandler(new MethodGetRotation());

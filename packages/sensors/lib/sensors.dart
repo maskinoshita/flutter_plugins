@@ -4,11 +4,20 @@ import 'package:flutter/services.dart';
 const EventChannel _accelerometerEventChannel =
     EventChannel('plugins.flutter.io/sensors/accelerometer');
 
+const EventChannel _accelerometerUncalibratedEventChannel =
+    EventChannel('plugins.flutter.io/sensors/accelerometer_uncalibrated');
+
+const EventChannel _gravityEventChannel =
+    EventChannel('plugins.flutter.io/sensors/gravity');
+
 const EventChannel _userAccelerometerEventChannel =
     EventChannel('plugins.flutter.io/sensors/user_accel');
 
 const EventChannel _gyroscopeEventChannel =
     EventChannel('plugins.flutter.io/sensors/gyroscope');
+
+const EventChannel _gyroscopeUncalibratedEventChannel =
+    EventChannel('plugins.flutter.io/sensors/gyroscope_uncalibrated');
 
 const EventChannel _rotationVectorEventChannel =
     EventChannel('plugins.flutter.io/sensors/rotation_vector');
@@ -22,6 +31,9 @@ const EventChannel _geomagneticRotationVectorEventChannel =
 const EventChannel _magneticFieldEventChannel =
     EventChannel('plugins.flutter.io/sensors/magnetic_field');
 
+const EventChannel _magneticFieldUncalibratedEventChannel =
+    EventChannel('plugins.flutter.io/sensors/magnetic_field_uncalibrated');
+
 const MethodChannel _getRotationMethodChannel =
     MethodChannel('plugins.flutter.io/sensors/get_rotation_matrix');
 
@@ -29,8 +41,8 @@ const MethodChannel _getOrientationMethodChannel =
     MethodChannel('plugins.flutter.io/sensors/get_orientation');
 
 class AccelerometerEvent {
-  AccelerometerEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMillisecondsSinceEpoch(tus);
+  AccelerometerEvent(int tms, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
 
   /// creation time of sensor data
   final DateTime t;
@@ -48,9 +60,62 @@ class AccelerometerEvent {
   String toString() => '[AccelerometerEvent (x: $x, y: $y, z: $z)]';
 }
 
+class AccelerometerUncalibratedEvent {
+  AccelerometerUncalibratedEvent(
+      int tms,
+      this.uncalibratedX,
+      this.uncalibratedY,
+      this.uncalibratedZ,
+      this.biasX,
+      this.biasY,
+      this.biasZ)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
+
+  /// creation time of sensor data
+  final DateTime t;
+
+  /// Uncalibrated acceleration force along the x axis (including gravity) measured in m/s^2.
+  final double uncalibratedX;
+
+  /// Uncalibrated acceleration along the y axis (including gravity) measured in m/s^2.
+  final double uncalibratedY;
+
+  /// Uncalibrated acceleration along the z axis (including gravity) measured in m/s^2.
+  final double uncalibratedZ;
+
+  /// Acceleration bias along the x axis (including gravity) measured in m/s^2.
+  final double biasX;
+
+  /// Acceleration bias along the x axis (including gravity) measured in m/s^2.
+  final double biasY;
+
+  /// Acceleration bias along the x axis (including gravity) measured in m/s^2.
+  final double biasZ;
+}
+
+class GravityEvent {
+  GravityEvent(int tms, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
+
+  /// creation time of sensor data
+  final DateTime t;
+
+  /// Gravity force along the x axis measured in m/s^2.
+  final double x;
+
+  /// Gravity force along the y axis measured in m/s^2.
+  final double y;
+
+  /// Gravity force along the z axis measured in m/s^2.
+  final double z;
+
+  @override
+  String toString() => '[AccelerometerEvent (x: $x, y: $y, z: $z)]';
+}
+
 class GyroscopeEvent {
-  GyroscopeEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMillisecondsSinceEpoch(tus);
+  GyroscopeEvent(int tms, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
 
   /// creation time of sensor data
   final DateTime t;
@@ -68,9 +133,36 @@ class GyroscopeEvent {
   String toString() => '[GyroscopeEvent (x: $x, y: $y, z: $z)]';
 }
 
+class GyroscopeUncalibratedEvent {
+  GyroscopeUncalibratedEvent(int tms, this.uncalibratedX, this.uncalibratedY,
+      this.uncalibratedZ, this.biasX, this.biasY, this.biasZ)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
+
+  /// creation time of sensor data
+  final DateTime t;
+
+  /// Uncalibrated rate of rotation around the x axis measured in rad/s.
+  final double uncalibratedX;
+
+  /// Uncalibrated rate of rotation around the y axis measured in rad/s.
+  final double uncalibratedY;
+
+  /// Uncalibrated rate of rotation around the z axis measured in rad/s.
+  final double uncalibratedZ;
+
+  /// Rate bias of rotation around the x axis measured in rad/s.
+  final double biasX;
+
+  /// Rate bias of rotation around the y axis measured in rad/s.
+  final double biasY;
+
+  /// Rate bias of rotation around the z axis measured in rad/s.
+  final double biasZ;
+}
+
 class UserAccelerometerEvent {
-  UserAccelerometerEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMillisecondsSinceEpoch(tus);
+  UserAccelerometerEvent(int tms, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
 
   /// creation time of sensor data
   final DateTime t;
@@ -89,8 +181,8 @@ class UserAccelerometerEvent {
 }
 
 class RotationVectorEvent {
-  RotationVectorEvent(int tus, this.x, this.y, this.z, this.scalar)
-      : t = DateTime.fromMillisecondsSinceEpoch(tus);
+  RotationVectorEvent(int tms, this.x, this.y, this.z, this.scalar)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
 
   /// creation time of sensor data
   final DateTime t;
@@ -113,8 +205,8 @@ class RotationVectorEvent {
 }
 
 class GameRotationVectorEvent {
-  GameRotationVectorEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMillisecondsSinceEpoch(tus);
+  GameRotationVectorEvent(int tms, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
 
   /// creation time of sensor data
   final DateTime t;
@@ -133,8 +225,8 @@ class GameRotationVectorEvent {
 }
 
 class GeomagneticRotationVectorEvent {
-  GeomagneticRotationVectorEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMillisecondsSinceEpoch(tus);
+  GeomagneticRotationVectorEvent(int tms, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
 
   /// creation time of sensor data
   final DateTime t;
@@ -153,23 +245,56 @@ class GeomagneticRotationVectorEvent {
 }
 
 class MagneticFieldEvent {
-  MagneticFieldEvent(int tus, this.x, this.y, this.z)
-      : t = DateTime.fromMillisecondsSinceEpoch(tus);
+  MagneticFieldEvent(int tms, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
 
   /// creation time of sensor data
   final DateTime t;
 
-  /// Game rotation vector angle along the x axis
+  /// Magnetic field strength along the x axis in uT
   final double x;
 
-  /// Game rotation vector angle along the y axis
+  /// Magnetic field strength along the y axis in uT
   final double y;
 
-  /// Game rotation vector angle along the z axis
+  /// Magnetic field strength along the z axis in uT
   final double z;
 
   @override
   String toString() => '[MagneticFieldEvent (x: $x, y: $y, z: $z)]';
+}
+
+class MagneticFieldUncalibratedEvent {
+  MagneticFieldUncalibratedEvent(
+      int tms,
+      this.uncalibratedX,
+      this.uncalibratedY,
+      this.uncalibratedZ,
+      this.biasX,
+      this.biasY,
+      this.biasZ)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
+
+  /// creation time of sensor data
+  final DateTime t;
+
+  /// Magnetic field strength (including hard iron) along the x axis in uT
+  final double uncalibratedX;
+
+  /// Magnetic field strength (including hard iron) along the y axis in uT
+  final double uncalibratedY;
+
+  /// Magnetic field strength (including hard iron) along the z axis in uT
+  final double uncalibratedZ;
+
+  /// Bias of magnetic field strength along the x axis in uT
+  final double biasX;
+
+  /// Bias of magnetic field strength along the y axis in uT
+  final double biasY;
+
+  /// Bias of magnetic field strength along the z axis in uT
+  final double biasZ;
 }
 
 class DeviceOrientation {
@@ -186,12 +311,16 @@ class DeviceOrientation {
 }
 
 Stream<AccelerometerEvent> _accelerometerEvents;
+Stream<AccelerometerUncalibratedEvent> _accelerometerUncalibratedEvents;
+Stream<GravityEvent> _gravityEvents;
 Stream<GyroscopeEvent> _gyroscopeEvents;
+Stream<GyroscopeUncalibratedEvent> _gyroscopeUncalibratedEvents;
 Stream<UserAccelerometerEvent> _userAccelerometerEvents;
 Stream<RotationVectorEvent> _rotationVectorEvents;
 Stream<GameRotationVectorEvent> _gameRotationVectorEvents;
 Stream<GeomagneticRotationVectorEvent> _geomagneticRotationVectorEvents;
 Stream<MagneticFieldEvent> _magneticFieldEvents;
+Stream<MagneticFieldUncalibratedEvent> _magneticFieldUncalibratedEvents;
 
 final int _sampleRateDefault = 15;
 int _sampleRate;
@@ -212,6 +341,28 @@ Stream<AccelerometerEvent> get accelerometerEvents {
   return _accelerometerEvents;
 }
 
+/// A broadcast stream of events from the device accelerometer uncalibrated.
+Stream<AccelerometerUncalibratedEvent> get accelerometerUncalibratedEvents {
+  if (_accelerometerUncalibratedEvents == null) {
+    _accelerometerUncalibratedEvents = _accelerometerUncalibratedEventChannel
+        .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
+        .map((dynamic event) => AccelerometerUncalibratedEvent(event[0],
+            event[1], event[2], event[3], event[4], event[5], event[6]));
+  }
+  return _accelerometerUncalibratedEvents;
+}
+
+/// A broadcast stream of events from gravity.
+Stream<GravityEvent> get gravityEvents {
+  if (_gravityEvents == null) {
+    _gravityEvents = _gravityEventChannel
+        .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
+        .map((dynamic event) =>
+            GravityEvent(event[0], event[1], event[2], event[3]));
+  }
+  return _gravityEvents;
+}
+
 /// A broadcast stream of events from the device gyroscope.
 Stream<GyroscopeEvent> get gyroscopeEvents {
   if (_gyroscopeEvents == null) {
@@ -221,6 +372,17 @@ Stream<GyroscopeEvent> get gyroscopeEvents {
             GyroscopeEvent(event[0], event[1], event[2], event[3]));
   }
   return _gyroscopeEvents;
+}
+
+/// A broadcast stream of events from the device gyroscope.
+Stream<GyroscopeUncalibratedEvent> get gyroscopeUncalibratedEvents {
+  if (_gyroscopeUncalibratedEvents == null) {
+    _gyroscopeUncalibratedEvents = _gyroscopeUncalibratedEventChannel
+        .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
+        .map((dynamic event) => GyroscopeUncalibratedEvent(event[0], event[1],
+            event[2], event[3], event[4], event[5], event[6]));
+  }
+  return _gyroscopeUncalibratedEvents;
 }
 
 /// Events from the device accelerometer with gravity removed.
@@ -269,13 +431,24 @@ Stream<GeomagneticRotationVectorEvent> get geomagneticRotationVectorEvents {
 
 /// Events from the magnetic field.
 Stream<MagneticFieldEvent> get magneticFieldEvents {
-  if (_userAccelerometerEvents == null) {
+  if (_magneticFieldEvents == null) {
     _magneticFieldEvents = _magneticFieldEventChannel
         .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
         .map((dynamic event) =>
             MagneticFieldEvent(event[0], event[1], event[2], event[3]));
   }
   return _magneticFieldEvents;
+}
+
+/// Events from the magnetic field uncalibrated.
+Stream<MagneticFieldUncalibratedEvent> get magneticFieldUncalibratedEvents {
+  if (_magneticFieldUncalibratedEvents == null) {
+    _magneticFieldUncalibratedEvents = _magneticFieldUncalibratedEventChannel
+        .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
+        .map((dynamic event) => MagneticFieldUncalibratedEvent(event[0],
+            event[1], event[2], event[3], event[4], event[5], event[6]));
+  }
+  return _magneticFieldUncalibratedEvents;
 }
 
 Future<List<double>> getRotationMatrix(
