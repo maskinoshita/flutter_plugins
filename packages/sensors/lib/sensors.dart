@@ -34,11 +34,14 @@ const EventChannel _magneticFieldEventChannel =
 const EventChannel _magneticFieldUncalibratedEventChannel =
     EventChannel('plugins.flutter.io/sensors/magnetic_field_uncalibrated');
 
-const MethodChannel _getRotationMethodChannel =
-    MethodChannel('plugins.flutter.io/sensors/get_rotation_matrix');
+const EventChannel _rotationMatrixEventChannel =
+    EventChannel('plugins.flutter.io/sensors/rotation_matrix');
 
-const MethodChannel _getOrientationMethodChannel =
-    MethodChannel('plugins.flutter.io/sensors/get_orientation');
+const EventChannel _quaternionEventChannel =
+    EventChannel('plugins.flutter.io/sensors/quaternion');
+
+const EventChannel _orientationEventChannel =
+    EventChannel('plugins.flutter.io/sensors/orientation');
 
 class AccelerometerEvent {
   AccelerometerEvent(int tms, this.x, this.y, this.z)
@@ -91,6 +94,10 @@ class AccelerometerUncalibratedEvent {
 
   /// Acceleration bias along the x axis (including gravity) measured in m/s^2.
   final double biasZ;
+
+  @override
+  String toString() =>
+      '[AccelerometerUncalibratedEvent (ux: $uncalibratedX, uy: $uncalibratedY, uz: $uncalibratedZ, biasX: $biasX, biasY: $biasY, biasZ: $biasZ)]';
 }
 
 class GravityEvent {
@@ -158,6 +165,10 @@ class GyroscopeUncalibratedEvent {
 
   /// Rate bias of rotation around the z axis measured in rad/s.
   final double biasZ;
+
+  @override
+  String toString() =>
+      '[GyroscopeUncalibratedEvent (ux: $uncalibratedX, uy: $uncalibratedY, uz: $uncalibratedZ, biasX: $biasX, biasY: $biasY, biasZ: $biasZ)]';
 }
 
 class UserAccelerometerEvent {
@@ -295,10 +306,118 @@ class MagneticFieldUncalibratedEvent {
 
   /// Bias of magnetic field strength along the z axis in uT
   final double biasZ;
+
+  @override
+  String toString() =>
+      '[MagneticFieldEvent (ux: $uncalibratedX, uy: $uncalibratedY, uz: $uncalibratedZ, biasX: $biasX, biasY: $biasY, biasZ: $biasZ)]';
 }
 
-class DeviceOrientation {
-  DeviceOrientation(this.azimuth, this.pitch, this.roll);
+class RotationMatrixEvent {
+  RotationMatrixEvent(int tms, this.m11, this.m12, this.m13, this.m21, this.m22,
+      this.m23, this.m31, this.m32, this.m33)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
+
+  RotationMatrixEvent.fromArray(int tms, List<double> mat)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms),
+        assert(mat != null),
+        assert(mat.length >= 9),
+        assert(mat[0] != null),
+        assert(mat[1] != null),
+        assert(mat[2] != null),
+        assert(mat[3] != null),
+        assert(mat[4] != null),
+        assert(mat[5] != null),
+        assert(mat[6] != null),
+        assert(mat[7] != null),
+        assert(mat[8] != null),
+        m11 = mat[0],
+        m12 = mat[1],
+        m13 = mat[2],
+        m21 = mat[3],
+        m22 = mat[4],
+        m23 = mat[5],
+        m31 = mat[6],
+        m32 = mat[7],
+        m33 = mat[8];
+
+  /// creation time of sensor data
+  final DateTime t;
+
+  /// rotation matrix element of m(1,1)
+  final double m11;
+
+  /// rotation matrix element of m(1,2)
+  final double m12;
+
+  /// rotation matrix element of m(1,3)
+  final double m13;
+
+  /// rotation matrix element of m(2,1)
+  final double m21;
+
+  /// rotation matrix element of m(2,2)
+  final double m22;
+
+  /// rotation matrix element of m(2,3)
+  final double m23;
+
+  /// rotation matrix element of m(3,1)
+  final double m31;
+
+  /// rotation matrix element of m(3,2)
+  final double m32;
+
+  /// rotation matrix element of m(3,3)
+  final double m33;
+
+  List<double> toArray() {
+    return [m11, m12, m13, m21, m22, m23, m31, m32, m33];
+  }
+}
+
+class QuaternionEvent {
+  QuaternionEvent(int tms, this.w, this.x, this.y, this.z)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
+
+  QuaternionEvent.fromArray(int tms, List<double> quat)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms),
+        assert(quat != null),
+        assert(quat.length >= 4),
+        assert(quat[0] != null),
+        assert(quat[1] != null),
+        assert(quat[2] != null),
+        assert(quat[3] != null),
+        w = quat[0],
+        x = quat[1],
+        y = quat[2],
+        z = quat[3];
+
+  /// creation time of sensor data
+  final DateTime t;
+
+  /// Scalar of Quaternion
+  final double w;
+
+  /// Quaternion along the x axis
+  final double x;
+
+  /// Quaternion along the y axis
+  final double y;
+
+  /// Quaternion along the z axis
+  final double z;
+
+  List<double> toArray() {
+    return [w, x, y, z];
+  }
+}
+
+class OrientationEvent {
+  OrientationEvent(int tms, this.azimuth, this.pitch, this.roll)
+      : t = DateTime.fromMillisecondsSinceEpoch(tms);
+
+  /// creation time of sensor data
+  final DateTime t;
 
   /// azimuth angle (rotation angle for z axis)
   final double azimuth; // z
@@ -321,6 +440,9 @@ Stream<GameRotationVectorEvent> _gameRotationVectorEvents;
 Stream<GeomagneticRotationVectorEvent> _geomagneticRotationVectorEvents;
 Stream<MagneticFieldEvent> _magneticFieldEvents;
 Stream<MagneticFieldUncalibratedEvent> _magneticFieldUncalibratedEvents;
+Stream<RotationMatrixEvent> _rotationMatrixEvents;
+Stream<QuaternionEvent> _quaternionEvents;
+Stream<OrientationEvent> _orientationEvents;
 
 final int _sampleRateDefault = 15;
 int _sampleRate;
@@ -451,55 +573,44 @@ Stream<MagneticFieldUncalibratedEvent> get magneticFieldUncalibratedEvents {
   return _magneticFieldUncalibratedEvents;
 }
 
-Future<List<double>> getRotationMatrix(
-    AccelerometerEvent accel, MagneticFieldEvent mag) async {
-  final List<double> accelList = [accel.x, accel.y, accel.z];
-  final List<double> magList = [mag.x, mag.y, mag.z];
-  final List<dynamic> ret = await _getRotationMethodChannel.invokeMethod(
-      'getRotationMatrix',
-      <String, dynamic>{'accel': accelList, 'mag': magList});
-  return ret.cast<double>();
+/// Events from the rotation matrix (internally rotation vector used)
+Stream<RotationMatrixEvent> get rotationMatrixEvents {
+  if (_rotationMatrixEvents == null) {
+    _rotationMatrixEvents = _rotationMatrixEventChannel
+        .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
+        .map((dynamic event) => RotationMatrixEvent(
+            event[0],
+            event[1],
+            event[2],
+            event[3],
+            event[4],
+            event[5],
+            event[6],
+            event[7],
+            event[8],
+            event[9]));
+  }
+  return _rotationMatrixEvents;
 }
 
-Future<List<double>> getRotationMatrixFromRotationVector(
-    RotationVectorEvent rotationVec) async {
-  final List<double> rotVecList = [
-    rotationVec.x,
-    rotationVec.y,
-    rotationVec.z,
-    rotationVec.scalar
-  ];
-  final List<dynamic> ret = await _getRotationMethodChannel.invokeMethod(
-      'getRotationMatrixFromRotationVector',
-      <String, dynamic>{'rotationVec': rotVecList});
-  return ret.cast<double>();
+/// Events from the quarternion (internally rotation vector used)
+Stream<QuaternionEvent> get quaternionEvents {
+  if (_quaternionEvents == null) {
+    _quaternionEvents = _quaternionEventChannel
+        .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
+        .map((dynamic event) =>
+            QuaternionEvent(event[0], event[1], event[2], event[3], event[4]));
+  }
+  return _quaternionEvents;
 }
 
-Future<List<double>> getQuaternion(RotationVectorEvent rotationVec) async {
-  final List<double> rotVecList = [
-    rotationVec.x,
-    rotationVec.y,
-    rotationVec.z,
-    rotationVec.scalar
-  ];
-  final List<dynamic> ret = await _getRotationMethodChannel.invokeMethod(
-      'getQuaternion', <String, dynamic>{'rotationVec': rotVecList});
-  return ret.cast<double>();
-}
-
-Future<DeviceOrientation> getOrientation(
-    AccelerometerEvent accel, MagneticFieldEvent mag) async {
-  final List<double> accelList = [accel.x, accel.y, accel.z];
-  final List<double> magList = [mag.x, mag.y, mag.z];
-  final List<dynamic> list = await _getOrientationMethodChannel.invokeMethod(
-      'getOrientation', <String, dynamic>{'accel': accelList, 'mag': magList});
-  return DeviceOrientation(list[0], list[1], list[2]);
-}
-
-Future<DeviceOrientation> getOrientationFromRotationMatrix(
-    List<double> rotationMatrix) async {
-  final List<dynamic> list = await _getOrientationMethodChannel.invokeMethod(
-      'getOrientationFromRotationMatrix',
-      <String, dynamic>{'rotationMatrix': rotationMatrix});
-  return DeviceOrientation(list[0], list[1], list[2]);
+/// Events from the orientation (internally rotation vector used)
+Stream<OrientationEvent> get orientationEvents {
+  if (_orientationEvents == null) {
+    _orientationEvents = _orientationEventChannel
+        .receiveBroadcastStream(_sampleRate ?? _sampleRateDefault)
+        .map((dynamic event) =>
+            OrientationEvent(event[0], event[1], event[2], event[3]));
+  }
+  return _orientationEvents;
 }

@@ -10,19 +10,14 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import androidx.annotation.NonNull;
-
 import android.os.SystemClock;
 
 import io.flutter.plugin.common.EventChannel;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import java.util.ArrayList;
-import java.util.List;
 
 /** SensorsPlugin */
-public class SensorsPlugin implements EventChannel.StreamHandler {
+public class SensorsPlugin {
   private static final String ACCELEROMETER_CHANNEL_NAME = "plugins.flutter.io/sensors/accelerometer";
   private static final String ACCELEROMETER_UNCALIBRATED_CHANNEL_NAME = "plugins.flutter.io/sensors/accelerometer_uncalibrated";
   private static final String GRAVITY_CHANNEL_NAME = "plugins.flutter.io/sensors/gravity";
@@ -34,225 +29,152 @@ public class SensorsPlugin implements EventChannel.StreamHandler {
   private static final String GEOMAGNETIC_ROTATION_VECTOR_CHANNEL_NAME = "plugins.flutter.io/sensors/geomagnetic_rotation_vector";
   private static final String MAGNETIC_FIELD_CHANNEL_NAME = "plugins.flutter.io/sensors/magnetic_field";
   private static final String MAGNETIC_FIELD_UNCALIBRATED_CHANNEL_NAME = "plugins.flutter.io/sensors/magnetic_field_uncalibrated";
+  private static final String ROTATION_MATRIX_CHANNEL_NAME = "plugins.flutter.io/sensors/rotation_matrix";
+  private static final String QUATERNION_CHANNEL_NAME = "plugins.flutter.io/sensors/quaternion";
+  private static final String ORIENTATION_CHANNEL_NAME = "plugins.flutter.io/sensors/orientation";
 
   /** Plugin registration. */
   public static void registerWith(Registrar registrar) {
     final EventChannel accelerometerChannel = new EventChannel(registrar.messenger(), ACCELEROMETER_CHANNEL_NAME);
-    accelerometerChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_ACCELEROMETER));
+    accelerometerChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_ACCELEROMETER));
 
     final EventChannel accelerometerUncalibratedChannel = new EventChannel(registrar.messenger(), ACCELEROMETER_UNCALIBRATED_CHANNEL_NAME);
-    accelerometerUncalibratedChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_ACCELEROMETER_UNCALIBRATED));
+    accelerometerUncalibratedChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_ACCELEROMETER_UNCALIBRATED));
 
     final EventChannel gravityChannel = new EventChannel(registrar.messenger(), GRAVITY_CHANNEL_NAME);
-    gravityChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_GRAVITY));
+    gravityChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_GRAVITY));
 
     final EventChannel userAccelChannel = new EventChannel(registrar.messenger(), USER_ACCELEROMETER_CHANNEL_NAME);
-    userAccelChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_LINEAR_ACCELERATION));
+    userAccelChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_LINEAR_ACCELERATION));
 
     final EventChannel gyroscopeChannel = new EventChannel(registrar.messenger(), GYROSCOPE_CHANNEL_NAME);
-    gyroscopeChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_GYROSCOPE));
+    gyroscopeChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_GYROSCOPE));
 
     final EventChannel gyroscopeUncalibratedChannel = new EventChannel(registrar.messenger(), GYROSCOPE_UNCALIBRATED_CHANNEL_NAME);
-    gyroscopeUncalibratedChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_GYROSCOPE_UNCALIBRATED));
+    gyroscopeUncalibratedChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_GYROSCOPE_UNCALIBRATED));
 
     final EventChannel rotationVectorChannel = new EventChannel(registrar.messenger(), ROTATION_VECTOR_CHANNEL_NAME);
-    rotationVectorChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_ROTATION_VECTOR));
+    rotationVectorChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_ROTATION_VECTOR));
 
     final EventChannel gameRotationVectorChannel = new EventChannel(registrar.messenger(), GAME_ROTATION_VECTOR_CHANNEL_NAME);
-    gameRotationVectorChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_GAME_ROTATION_VECTOR));
+    gameRotationVectorChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_GAME_ROTATION_VECTOR));
 
     final EventChannel geomagneticRotationVectorChannel = new EventChannel(registrar.messenger(), GEOMAGNETIC_ROTATION_VECTOR_CHANNEL_NAME);
-    geomagneticRotationVectorChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR));
+    geomagneticRotationVectorChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR));
 
     final EventChannel magneticFieldChannel = new EventChannel(registrar.messenger(), MAGNETIC_FIELD_CHANNEL_NAME);
-    magneticFieldChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_MAGNETIC_FIELD));
+    magneticFieldChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_MAGNETIC_FIELD));
 
     final EventChannel magneticFieldUncalibratedChannel = new EventChannel(registrar.messenger(), MAGNETIC_FIELD_UNCALIBRATED_CHANNEL_NAME);
-    magneticFieldUncalibratedChannel.setStreamHandler(new SensorsPlugin(registrar.context(), Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED));
+    magneticFieldUncalibratedChannel.setStreamHandler(new GenericSensorHandler(registrar.context(), Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED));
 
-    final MethodChannel methodGetRotationMatrixChannel = new MethodChannel(registrar.messenger(), MethodGetRotation.CHANNEL);
-    methodGetRotationMatrixChannel.setMethodCallHandler(new MethodGetRotation());
-
-    final MethodChannel methodGetOrientationChannel = new MethodChannel(registrar.messenger(), MethodGetOrientation.CHANNEL);
-    methodGetOrientationChannel.setMethodCallHandler(new MethodGetOrientation());
-  }
-
-  private SensorEventListener sensorEventListener;
-  private final SensorManager sensorManager;
-  private final Sensor sensor;
-
-  private SensorsPlugin(Context context, int sensorType) {
-    sensorManager = (SensorManager) context.getSystemService(context.SENSOR_SERVICE);
-    sensor = sensorManager.getDefaultSensor(sensorType);
-  }
-
-  @Override
-  public void onListen(Object arguments, EventChannel.EventSink events) {
-    sensorEventListener = createSensorEventListener(events);
-    sensorManager.registerListener(sensorEventListener, sensor, (int) (1000000 / (int) arguments));
-  }
-
-  @Override
-  public void onCancel(Object arguments) {
-    sensorManager.unregisterListener(sensorEventListener);
-  }
-
-  SensorEventListener createSensorEventListener(final EventChannel.EventSink events) {
-    return new SensorEventListener() {
-      private final long boottime_ms_epoch = System.currentTimeMillis() - SystemClock.elapsedRealtimeNanos() / 1000000;
-
+    final EventChannel rotationMatrixChannel = new EventChannel(registrar.messenger(), ROTATION_MATRIX_CHANNEL_NAME);
+    rotationMatrixChannel.setStreamHandler(new HandlerFromRotationVector(registrar.context()) {
       @Override
-      public void onAccuracyChanged(Sensor sensor, int accuracy) {
+      protected float[] fromRotationVector(final float[] rv) {
+        final float[] rotationMat = new float[9];
+        SensorManager.getRotationMatrixFromVector(rotationMat, rv);
+        return rotationMat;
       }
+    });
 
+    final EventChannel quaternionChannel = new EventChannel(registrar.messenger(), QUATERNION_CHANNEL_NAME);
+    quaternionChannel.setStreamHandler(new HandlerFromRotationVector(registrar.context()) {
       @Override
-      public void onSensorChanged(SensorEvent event) {
-        final long timestamp_ms_epoch = boottime_ms_epoch + event.timestamp / 1000000;
-        final ArrayList<Object> sensorValues = new ArrayList(event.values.length + 1);
-        sensorValues.add(timestamp_ms_epoch);
-        for (double v : event.values) {
-          sensorValues.add(v);
+      protected float[] fromRotationVector(final float[] rv) {
+        final float[] quaternion = new float[4];
+        SensorManager.getQuaternionFromVector(quaternion, rv);
+        return quaternion;
+      }
+    });
+
+    final EventChannel orientationChannel = new EventChannel(registrar.messenger(), ORIENTATION_CHANNEL_NAME);
+    orientationChannel.setStreamHandler(new HandlerFromRotationVector(registrar.context()) {
+      @Override
+      protected float[] fromRotationVector(final float[] rv) {
+        final float[] rotationMat = new float[9];
+        SensorManager.getRotationMatrixFromVector(rotationMat, rv);
+        final float[] orientation = new float[3];
+        SensorManager.getOrientation(rotationMat, orientation);
+        return orientation;
+      }
+    });
+  }
+
+  public static abstract class GenericSensorEventListener implements SensorEventListener {
+    private final long BOOT_TIME_MS_EPOCH = System.currentTimeMillis() - SystemClock.elapsedRealtimeNanos() / 1000000;
+
+    public long calc_timestamp_ms_epoch(long timestamp_ns) {
+      return BOOT_TIME_MS_EPOCH + timestamp_ns / 1000000;
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    @Override
+    abstract public void onSensorChanged(SensorEvent sensorEvent);
+  }
+
+  public static class GenericSensorHandler implements EventChannel.StreamHandler {
+    private SensorEventListener sensorEventListener;
+    private final SensorManager sensorManager;
+    private final Sensor sensor;
+  
+    private GenericSensorHandler(Context context, int sensorType) {
+      sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+      sensor = sensorManager.getDefaultSensor(sensorType);
+    }
+  
+    @Override
+    public void onListen(Object arguments, EventChannel.EventSink events) {
+      sensorEventListener = createSensorEventListener(events);
+      sensorManager.registerListener(sensorEventListener, sensor, (int) (1000000 / (int) arguments));
+    }
+  
+    @Override
+    public void onCancel(Object arguments) {
+      sensorManager.unregisterListener(sensorEventListener);
+    }
+  
+    protected SensorEventListener createSensorEventListener(final EventChannel.EventSink events) {
+      return new GenericSensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+          final long timestamp_ms_epoch = calc_timestamp_ms_epoch(event.timestamp);
+          final ArrayList<Object> sensorValues = new ArrayList<>(event.values.length + 1);
+          sensorValues.add(timestamp_ms_epoch);
+          for (double v : event.values) {
+            sensorValues.add(v);
+          }
+          events.success(sensorValues);
         }
-        events.success(sensorValues);
-      }
-    };
-  }
-}
-
-class MethodUtil {
-  public static float[] toFloatArray(List<Double> a) {
-    if(a == null || a.isEmpty()) {
-      return null;
-    }
-    final int size = a.size();
-    final float[] r = new float[size];
-    for(int i=0; i<size; i++) {
-      r[i] = a.get(i).floatValue();
-    }
-    return r;
-  }
-  public static List<Double> toDoubleList(float[] a) {
-    if(a == null || a.length == 0) {
-      return null;
-    }
-    final int size = a.length;
-    final List<Double> r = new ArrayList<>(size);
-    for(float f : a) {
-      r.add(Double.valueOf(f));
-    }
-    return r;
-  }
-}
-
-class MethodGetRotation implements MethodChannel.MethodCallHandler {
-  static final String CHANNEL = "plugins.flutter.io/sensors/get_rotation_matrix";
-  static final String GET_MATRIX = "getRotationMatrix";
-  static final String GET_MATRIX_FROM_VECTOR = "getRotationMatrixFromRotationVector";
-  static final String GET_QUATERNION = "getQuaternion";
-
-  @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
-    if (GET_MATRIX.equals(call.method)) {
-      final List<Double> accel = call.argument("accel");
-      if(accel == null || accel.isEmpty()) {
-        result.error("ErrorAccel", "Please pass acclerometer values", null);
-        return;
-      }
-      final List<Double> mag = call.argument("mag");
-      if(mag == null || mag.isEmpty()) {
-        result.error("ErrorMag", "Please pass magnetrometer values", null);
-        return;
-      }
-      final float[] ret = getRotationMatrix(MethodUtil.toFloatArray(accel), MethodUtil.toFloatArray(mag));
-      if(ret == null) {
-        result.error("Unknown Error", "An error occured in getRotationMatrix", null);
-        return;
-      } else {
-        result.success(MethodUtil.toDoubleList(ret));
-        return;
-      }
-    } else if (GET_MATRIX_FROM_VECTOR.equals(call.method)) {
-      final List<Double> rotationVec = call.argument("rotationVec");
-      if(rotationVec == null || rotationVec.isEmpty()) {
-        result.error("ErrorRotationVec", "Please pass rotation vector values", null);
-        return;
-      }
-      result.success(MethodUtil.toDoubleList(getRotationMatrixFromVector(MethodUtil.toFloatArray(rotationVec))));
-      return;
-    } else if (GET_QUATERNION.equals(call.method)) {
-      final List<Double> rotationVec = call.argument("rotationVec");
-      if(rotationVec == null || rotationVec.isEmpty()) {
-        result.error("ErrorRotationVec", "Please pass rotation vector values", null);
-        return;
-      }
-      result.success(MethodUtil.toDoubleList(getQuaternion(MethodUtil.toFloatArray(rotationVec))));
-      return;
-    } else {
-      result.notImplemented();
+      };
     }
   }
 
-  static float[] getRotationMatrix(float[] accel, float[] mag) {
-    final float[] rotationMatrix = new float[9];
-    if(SensorManager.getRotationMatrix(rotationMatrix, null, accel, mag)) {
-      return rotationMatrix;
-    } else {
-      return null;
+  public static abstract class HandlerFromRotationVector extends GenericSensorHandler {
+    private  HandlerFromRotationVector(Context context) {
+      super(context, Sensor.TYPE_ROTATION_VECTOR);
     }
-  }
 
-  static float[] getRotationMatrixFromVector(float[] rotationVec) {
-    final float[] rotationMatrix = new float[9];
-    SensorManager.getRotationMatrixFromVector(rotationMatrix, rotationVec);
-    return rotationMatrix;
-  }
+    abstract protected float[] fromRotationVector(final float[] rv);
 
-  static float[] getQuaternion(float[] rotationVec) {
-    final float[] quaternion = new float[4];
-    SensorManager.getQuaternionFromVector(quaternion, rotationVec);
-    return quaternion;
-  }
-}
-
-class MethodGetOrientation implements MethodChannel.MethodCallHandler {
-  static final String CHANNEL = "plugins.flutter.io/sensors/get_orientation";
-  static final String FROM_SENSOR = "getOrientation";
-  static final String FROM_MATRIX = "getOrientationFromRotationMatrix";
-
-  @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
-    if (FROM_SENSOR.equals(call.method)) {
-      final List<Double> accel = call.argument("accel");
-      if(accel == null || accel.isEmpty()) {
-        result.error("ErrorAccel", "Please pass acclerometer values", null);
-        return;
-      }
-      final List<Double> mag = call.argument("mag");
-      if(mag == null || mag.isEmpty()) {
-        result.error("ErrorMag", "Please pass magnetrometer values", null);
-        return;
-      }
-      final float[] rotationMatrix = MethodGetRotation.getRotationMatrix(MethodUtil.toFloatArray((accel)), MethodUtil.toFloatArray(mag));
-      if(rotationMatrix == null) {
-        result.error("Unknown Error", "An error occured in getRotationMatrix", null);
-        return;
-      } else {
-        float[] ret = getOrientationFromMatrix(rotationMatrix);
-        result.success(MethodUtil.toDoubleList(ret));
-        return;
-      }
-    } else if (FROM_MATRIX.equals(call.method)) {
-      final List<Double> rotationMatrix = call.argument("rotationMatrix");
-      float[] ret = getOrientationFromMatrix(MethodUtil.toFloatArray(rotationMatrix));
-      result.success(MethodUtil.toDoubleList(ret));
-    } else {
-      result.notImplemented();
+    @Override
+    protected SensorEventListener createSensorEventListener(final EventChannel.EventSink events) {
+      return new GenericSensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+          final long timestamp_ms_epoch = calc_timestamp_ms_epoch(event.timestamp);
+          final float[] values = fromRotationVector(event.values);
+          final ArrayList<Object> sensorValues = new ArrayList<>(values.length + 1);
+          sensorValues.add(timestamp_ms_epoch);
+          for (double v : values) {
+            sensorValues.add(v);
+          }
+          events.success(sensorValues);
+        }
+      };
     }
-  }
-
-  static float[] getOrientationFromMatrix(float[] rotationMatrix) {
-    final float[] orientation = new float[3];
-    SensorManager.getOrientation(rotationMatrix, orientation);
-    return orientation;
   }
 }
