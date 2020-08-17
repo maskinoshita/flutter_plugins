@@ -15,3 +15,33 @@
 
 @interface FLTGyroscopeStreamHandler : NSObject <FlutterStreamHandler>
 @end
+
+@interface FLTAccelerometerUncalibratedStreamHandler : NSObject <FlutterStreamHandler>
+@end
+
+@interface FLTGravityStreamHandler : NSObject<FlutterStreamHandler>
+@end
+
+@interface FLTGyroscopeUncalibratedStreamHandler : NSObject<FlutterStreamHandler>
+@end
+
+@interface FLTRotationVectorStreamHandler : NSObject<FlutterStreamHandler>
+@end
+
+@interface FLTGameRotationVectorStreamHandler : NSObject<FlutterStreamHandler>
+@end
+
+@interface FLTMagneticFieldStreamHandler : NSObject<FlutterStreamHandler>
+@end
+
+@interface FLTMagneticFieldUncalibratedStreamHandler : NSObject<FlutterStreamHandler>
+@end
+
+@interface FLTRotationMatrixStreamHandler : NSObject<FlutterStreamHandler>
+@end
+
+@interface FLTQuaternionStreamHandler : NSObject<FlutterStreamHandler>
+@end
+
+@interface FLTOrientationStreamHandler : NSObject<FlutterStreamHandler>
+@end
