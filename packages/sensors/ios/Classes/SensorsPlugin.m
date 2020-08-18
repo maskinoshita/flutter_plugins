@@ -219,7 +219,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _motionManager.accelerometerUpdateInterval = (float)1 / [arguments integerValue];
   _initAccelometerQueue();
   [_motionManager
-      startAccelerometerUpdatesToQueue:_accelerometerQueue
+      startAccelerometerUpdatesToQueue: [[NSOperationQueue alloc]init]// _accelerometerQueue
                            withHandler:^(CMAccelerometerData* data, NSError* error) {
                              double secondsEpoch = _timestampToEpoch(data.timestamp);
                              CMAcceleration acceleration = data.acceleration;
@@ -248,7 +248,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _initDeviceMotionQueue();
   [_motionManager
       startDeviceMotionUpdatesUsingReferenceFrame: CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
-                          toQueue:_deviceMotionQueue
+                          toQueue:[[NSOperationQueue alloc]init]//_deviceMotionQueue
                           withHandler:^(CMDeviceMotion* data, NSError* error) {
                             double secondsEpoch = _timestampToEpoch(data.timestamp);
                             CMAcceleration acceleration = data.userAcceleration;
@@ -275,7 +275,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _motionManager.gyroUpdateInterval = (float)1 / [arguments integerValue];
   _initGyroscopeQueue();
   [_motionManager
-      startGyroUpdatesToQueue:_gyroscopeQueue
+      startGyroUpdatesToQueue:[[NSOperationQueue alloc]init]//_gyroscopeQueue
                   withHandler:^(CMGyroData* data, NSError* error) {
                     double secondsEpoch = _timestampToEpoch(data.timestamp);
                     CMRotationRate rotationRate = data.rotationRate;
@@ -300,7 +300,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _motionManager.accelerometerUpdateInterval = (float)1 / [arguments integerValue];
   _initAccelometerQueue();
   [_motionManager 
-      startAccelerometerUpdatesToQueue:_accelerometerQueue
+      startAccelerometerUpdatesToQueue:[[NSOperationQueue alloc]init]//_accelerometerQueue
                            withHandler:^(CMAccelerometerData* data, NSError* error) {
                              double secondsEpoch = _timestampToEpoch(data.timestamp);
                              CMAcceleration acceleration = data.acceleration;
@@ -329,7 +329,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _initDeviceMotionQueue();
   [_motionManager
       startDeviceMotionUpdatesUsingReferenceFrame: CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
-                          toQueue:_deviceMotionQueue
+                          toQueue:[[NSOperationQueue alloc]init]//_deviceMotionQueue
                           withHandler:^(CMDeviceMotion* data, NSError* error) {
                             double secondsEpoch = _timestampToEpoch(data.timestamp);
                             CMAcceleration gravity = data.gravity;
@@ -356,7 +356,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _motionManager.gyroUpdateInterval = (float)1 / [arguments integerValue];
   _initGyroscopeQueue();
   [_motionManager
-      startGyroUpdatesToQueue:_gyroscopeQueue
+      startGyroUpdatesToQueue:[[NSOperationQueue alloc]init]//_gyroscopeQueue
                   withHandler:^(CMGyroData* data, NSError* error) {
                     double secondsEpoch = _timestampToEpoch(data.timestamp);
                     CMRotationRate rotationRate = data.rotationRate;
@@ -383,7 +383,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _initDeviceMotionQueue();
   [_motionManager
       startDeviceMotionUpdatesUsingReferenceFrame: CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
-                          toQueue:_deviceMotionQueue
+                          toQueue:[[NSOperationQueue alloc]init]//_deviceMotionQueue
                           withHandler:^(CMDeviceMotion* data, NSError* error) {
                             double secondsEpoch = _timestampToEpoch(data.timestamp);
                             CMQuaternion quad = data.attitude.quaternion;
@@ -409,7 +409,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _initDeviceMotionQueue();
   [_motionManager
       startDeviceMotionUpdatesUsingReferenceFrame: CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
-                          toQueue:_deviceMotionQueue
+                          toQueue:[[NSOperationQueue alloc]init]//_deviceMotionQueue
                           withHandler:^(CMDeviceMotion* data, NSError* error) {
                             double secondsEpoch = _timestampToEpoch(data.timestamp);
                             CMQuaternion quad = data.attitude.quaternion;
@@ -435,7 +435,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _initDeviceMotionQueue();
   [_motionManager
       startDeviceMotionUpdatesUsingReferenceFrame: CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
-                          toQueue:_deviceMotionQueue
+                          toQueue:[[NSOperationQueue alloc]init]//_deviceMotionQueue
                           withHandler:^(CMDeviceMotion* data, NSError* error) {
                             double secondsEpoch = _timestampToEpoch(data.timestamp);
                             CMMagneticField mag = data.magneticField.field;
@@ -460,7 +460,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _motionManager.deviceMotionUpdateInterval = (float)1 / [arguments integerValue];
   _initMagnetometerQueue();
   [_motionManager
-      startMagnetometerUpdatesToQueue: _magnetometerQueue
+      startMagnetometerUpdatesToQueue: [[NSOperationQueue alloc]init]//_magnetometerQueue
                           withHandler:^(CMMagnetometerData* data, NSError* error) {
                             double secondsEpoch = _timestampToEpoch(data.timestamp);
                             CMMagneticField mag = data.magneticField;
@@ -487,7 +487,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _initDeviceMotionQueue();
   [_motionManager
       startDeviceMotionUpdatesUsingReferenceFrame: CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
-                          toQueue:_deviceMotionQueue
+                          toQueue:[[NSOperationQueue alloc]init]//_deviceMotionQueue
                           withHandler:^(CMDeviceMotion* data, NSError* error) {
                             double secondsEpoch = _timestampToEpoch(data.timestamp);
                             CMRotationMatrix mat = data.attitude.rotationMatrix;
@@ -515,7 +515,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _initDeviceMotionQueue();
   [_motionManager
       startDeviceMotionUpdatesUsingReferenceFrame: CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
-                          toQueue:_deviceMotionQueue
+                          toQueue:[[NSOperationQueue alloc]init]//_deviceMotionQueue
                           withHandler:^(CMDeviceMotion* data, NSError* error) {
                             double secondsEpoch = _timestampToEpoch(data.timestamp);
                             CMQuaternion quad = data.attitude.quaternion;
@@ -541,7 +541,7 @@ static void sendMatrix(FlutterEventSink sink, long millisecondsEpoch, double m11
   _initDeviceMotionQueue();
   [_motionManager
       startDeviceMotionUpdatesUsingReferenceFrame: CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
-                          toQueue:_deviceMotionQueue
+                          toQueue:[[NSOperationQueue alloc]init]//_deviceMotionQueue
                           withHandler:^(CMDeviceMotion* data, NSError* error) {
                             double secondsEpoch = _timestampToEpoch(data.timestamp);
                             CMAttitude* attitude = data.attitude;
