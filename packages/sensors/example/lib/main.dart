@@ -39,21 +39,29 @@ class _MyHomePageState extends State<MyHomePage> {
   static const int _snakeColumns = 20;
   static const double _snakeCellSize = 10.0;
 
-  List<double> _accelerometerValues;
-  List<double> _userAccelerometerValues;
-  List<double> _gyroscopeValues;
+  AccelerometerEvent _accelerometerValues;
+  UserAccelerometerEvent _userAccelerometerValues;
+  GyroscopeEvent _gyroscopeValues;
   List<StreamSubscription<dynamic>> _streamSubscriptions =
       <StreamSubscription<dynamic>>[];
 
   @override
   Widget build(BuildContext context) {
-    final List<String> accelerometer =
-        _accelerometerValues?.map((double v) => v.toStringAsFixed(1))?.toList();
-    final List<String> gyroscope =
-        _gyroscopeValues?.map((double v) => v.toStringAsFixed(1))?.toList();
-    final List<String> userAccelerometer = _userAccelerometerValues
-        ?.map((double v) => v.toStringAsFixed(1))
-        ?.toList();
+    final List<String> accelerometer = [
+      _accelerometerValues.x.toString(),
+      _accelerometerValues.y.toString(),
+      _accelerometerValues.z.toString()
+    ];
+    final List<String> gyroscope = [
+      _gyroscopeValues.x.toString(),
+      _gyroscopeValues.y.toString(),
+      _gyroscopeValues.z.toString()
+    ];
+    final List<String> userAccelerometer = [
+      _userAccelerometerValues.x.toString(),
+      _userAccelerometerValues.y.toString(),
+      _userAccelerometerValues.z.toString()
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -121,21 +129,22 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    setSensorsSampleRate(100);
     _streamSubscriptions
         .add(accelerometerEvents.listen((AccelerometerEvent event) {
       setState(() {
-        _accelerometerValues = <double>[event.x, event.y, event.z];
+        _accelerometerValues = event;
       });
     }));
     _streamSubscriptions.add(gyroscopeEvents.listen((GyroscopeEvent event) {
       setState(() {
-        _gyroscopeValues = <double>[event.x, event.y, event.z];
+        _gyroscopeValues = event;
       });
     }));
     _streamSubscriptions
         .add(userAccelerometerEvents.listen((UserAccelerometerEvent event) {
       setState(() {
-        _userAccelerometerValues = <double>[event.x, event.y, event.z];
+        _userAccelerometerValues = event;
       });
     }));
   }
